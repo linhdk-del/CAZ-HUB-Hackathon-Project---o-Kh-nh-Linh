@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudAZ x Google Cloud Partner</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#050a15', /* Very deep blue/black */
+                        surface: '#0f172a', /* Lighter dark blue for cards */
+                        ggblue: '#4285F4',
+                        ggred: '#EA4335',
+                        ggyellow: '#FBBC05',
+                        gggreen: '#34A853',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        .glow-blue:hover { box-shadow: 0 0 25px rgba(66, 133, 244, 0.2); border-color: rgba(66, 133, 244, 0.5); }
+        .glow-red:hover { box-shadow: 0 0 25px rgba(234, 67, 53, 0.2); border-color: rgba(234, 67, 53, 0.5); }
+        .glow-yellow:hover { box-shadow: 0 0 25px rgba(251, 188, 5, 0.2); border-color: rgba(251, 188, 5, 0.5); }
+        .glow-green:hover { box-shadow: 0 0 25px rgba(52, 168, 83, 0.2); border-color: rgba(52, 168, 83, 0.5); }
+
+        @keyframes gradientPulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.5; }
+        }
+        .animate-gradient-pulse {
+            animation: gradientPulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050a15; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    /* Hiệu ứng viền đỏ phát sáng cho ô nhập liệu bị trống */
+.input-error {
+    border-color: #EA4335 !important; 
+    box-shadow: 0 0 12px rgba(234, 67, 51, 0.5) !important;
+    animation: shake 0.2s ease-in-out 0s 2;
+}
+
+@keyframes shake {
+    0% { margin-left: 0; }
+    25% { margin-left: 5px; }
+    75% { margin-left: -5px; }
+    100% { margin-left: 0; }
+}
+
+    </style>
+</head>
+
+<body class="bg-darkbg text-slate-300 antialiased selection:bg-ggblue selection:text-white relative">
+
+    <!-- Header (Cố định, Kính mờ - Glassmorphism) -->
+    <header class="fixed w-full top-0 z-50 backdrop-blur-xl bg-darkbg/80 border-b border-white/5 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer">
+                <span class="text-xl font-bold tracking-tight text-white flex items-center gap-1">
+                    CloudAZ
+                    <span class="text-slate-500 font-normal mx-1 text-sm">x</span> 
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-ggblue via-ggred to-ggyellow">
+                        Google Cloud
+                    </span>
+                    <span class="font-normal text-sm text-slate-400">Partner</span>
+                </span>
+            </div>
+            
+            <nav class="hidden md:flex items-center gap-8 font-medium text-sm">
+                <a href="#hero" class="hover:text-ggblue transition-colors">Trang chủ</a>
+                <a href="#survey" class="hover:text-ggred transition-colors">Khảo sát AI</a>
+                <a href="#keyword" class="hover:text-purple-400 transition-colors">Tư vấn AI</a>
+                <a href="#hub" class="hover:text-ggyellow transition-colors">Kho giải pháp</a>
+                <a href="javascript:void(0)" onclick="openDemoModal()" class="px-6 py-2.5 rounded-full bg-ggred/10 border border-ggred text-white ml-2 transition-all shadow-[0_0_15px_rgba(234,67,53,0.4)] hover:shadow-[0_0_25px_rgba(234,67,53,0.7)] animate-pulse">
+                    Yêu cầu Demo chuyên sâu
+                </a>
+            </nav>
+            
+            <button class="md:hidden text-slate-300 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="relative z-10 w-full overflow-hidden">
+        <!-- Floating Background Icons -->
+        <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-20">
+            <svg class="absolute top-[15%] left-[10%] w-16 h-16 text-ggblue animate-[bounce_6s_infinite]" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            <svg class="absolute bottom-[20%] right-[15%] w-24 h-24 text-ggyellow animate-[bounce_7s_infinite_1s]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0L14.59 9.41 24 12 14.59 14.59 12 24 9.41 14.59 0 12 9.41 9.41z"></path></svg>
+            <svg class="absolute top-[30%] right-[20%] w-14 h-14 text-gggreen animate-[bounce_5s_infinite_2s]" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <svg class="absolute bottom-[30%] left-[20%] w-20 h-20 text-purple-400 animate-[bounce_8s_infinite_0.5s]" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3l-1.5 3.5L14 8l3.5 1.5L19 13l1.5-3.5L24 8l-3.5-1.5L19 3zm-6 2l-1.5 6L5 13l6.5 1.5L13 21l1.5-6L21 13l-6.5-1.5L13 5z"/></svg>
+        </div>
+
+        <!-- Section 1: Hero -->
+        <section id="hero" class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden pt-20 transition-all duration-700 transform origin-center z-10 block">
+            <div class="absolute top-[15%] left-[5%] w-[35rem] h-[35rem] bg-ggblue/10 rounded-full blur-[140px] pointer-events-none"></div>
+            <div class="absolute bottom-[10%] right-[5%] w-[30rem] h-[30rem] bg-gggreen/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+            <div class="max-w-5xl mx-auto text-center z-10 px-4 w-full mt-10">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-slate-800 text-xs text-ggblue font-medium mb-8 shadow-lg">
+                    <span class="w-2 h-2 rounded-full bg-ggblue animate-pulse"></span> Sẵn sàng cho kỷ nguyên AI
+                </div>
+                
+                <h1 class="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white mb-6 tracking-tight leading-[1.2]">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-ggblue via-ggred to-ggyellow">Khám phá tiềm năng số hóa</span><br>
+                    <span class="text-white">ẩn giấu trong doanh nghiệp của bạn</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-slate-400 mb-16 max-w-3xl mx-auto leading-relaxed">
+                    2 phút khảo sát ẩn danh để nhận lộ trình tối ưu hóa hiệu suất bằng AI Gemini.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl mx-auto">
+                    <a href="#hub" class="group relative flex flex-col items-center justify-center p-8 md:p-12 rounded-3xl bg-surface border-2 border-slate-800 hover:border-ggblue hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(66,133,244,0.2)] transition-all duration-300 overflow-hidden cursor-pointer">
+                        <div class="absolute inset-0 bg-gradient-to-br from-ggblue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="bg-darkbg w-20 h-20 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(66,133,244,0.4)] transition-all border border-slate-700 group-hover:border-ggblue/50">
+                            <svg class="w-10 h-10 text-ggblue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <span class="text-2xl font-bold text-white mb-3 group-hover:text-ggblue transition-colors text-center">[Khám phá Kho Giải Pháp ngay]</span>
+                        <span class="text-slate-400 text-base text-center">Truy cập bộ thư viện Use Cases AI thực tiễn phân theo phòng ban.</span>
+                    </a>
+                    
+                    <a href="#survey" onclick="startSurveyFlow(event)" class="group relative flex flex-col items-center justify-center p-8 md:p-12 rounded-3xl bg-surface border-2 border-slate-800 hover:border-gggreen hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(52,168,83,0.2)] transition-all duration-300 overflow-hidden cursor-pointer">
+                        <div class="absolute inset-0 bg-gradient-to-br from-gggreen/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="bg-darkbg w-20 h-20 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(52,168,83,0.4)] transition-all border border-slate-700 group-hover:border-gggreen/50">
+                            <svg class="w-10 h-10 text-gggreen" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <span class="text-2xl font-bold text-white mb-3 group-hover:text-gggreen transition-colors text-center">[Chẩn đoán sức khỏe số &amp; Nhận quà]</span>
+                        <span class="text-slate-400 text-base text-center">Thực hiện bài test nhanh để thiết lập lộ trình.</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Survey Component -->
+        <section id="survey" class="min-h-screen hidden items-center justify-center py-20 px-4 relative overflow-hidden transition-all duration-700 transform scale-95 opacity-0 origin-center z-20">
+            <canvas id="confetti-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-50"></canvas>
+
+            <div class="w-full max-w-4xl mx-auto z-10 flex flex-col items-center">
+                <div class="text-center mb-10 w-full">
+                    <h2 class="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">Chẩn đoán Sức khỏe số</h2>
+                    <p class="text-slate-400 text-lg max-w-2xl mx-auto">Hoàn thành bảng khảo sát chẩn đoán để nhận lộ trình tối ưu hóa và liên hệ tư vấn chuyên sâu.</p>
+                </div>
+                
+                <div class="w-full max-w-2xl mb-8 opacity-0 transition-opacity duration-500" id="survey-progress-container">
+                    <div class="flex justify-between text-sm text-slate-400 mb-2 font-medium">
+                        <span id="survey-progress-text">Câu 1/10</span>
+                        <span id="survey-percentage-text" class="text-gggreen font-bold shadow-sm">10%</span>
+                    </div>
+                    <div class="h-2 w-full bg-slate-800 rounded-full relative overflow-hidden border border-slate-700/50">
+                        <div class="absolute inset-0 w-full h-full" style="background: linear-gradient(90deg, #EA4335, #FBBC05, #34A853);"></div>
+                        <div id="survey-progress-blocker" class="absolute top-0 right-0 h-full bg-slate-800 transition-all duration-700 ease-out" style="width: 100%;"></div>
+                    </div>
+                    <div class="relative w-full h-0">
+                        <div id="survey-progress-dot" class="absolute top-[-5px] w-3 h-3 bg-white rounded-full shadow-[0_0_12px_4px_#fff] transition-all duration-700 ease-out z-10 opacity-0" style="left: 0%; transform: translateX(-50%);"></div>
+                    </div>
+                </div>
+
+                <div class="relative w-full max-w-2xl mx-auto rounded-3xl p-[2px] overflow-hidden group shadow-2xl">
+                    <div class="absolute w-[200%] h-[200%] -top-[50%] -left-[50%] z-0 animate-[spin_4s_linear_infinite]" style="background: conic-gradient(from 0deg, #4285F4, #EA4335, #FBBC05, #34A853, #4285F4);"></div>
+                    <div class="absolute inset-[2px] bg-darkbg rounded-[22px] z-0"></div>
+                    
+                    <div class="relative z-10 w-full min-h-[440px] rounded-[22px] bg-surface/80 backdrop-blur-xl p-6 md:p-10 flex flex-col overflow-hidden border border-white/10 shadow-[0_8px_32px_0_rgba(255,255,255,0.05)]" id="survey-card-body">
+                        <div class="flex-grow flex flex-col justify-center items-center h-full w-full relative" id="survey-content">
+                            <div class="text-center w-full transition-opacity" id="survey-start-screen">
+                                <div class="w-20 h-20 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center mx-auto mb-6 shadow-xl">
+                                    <span class="text-4xl hover:scale-110 transition-transform cursor-default">🚀</span>
+                                </div>
+                                <h3 class="text-3xl font-bold text-white mb-4">Bạn đã sẵn sàng?</h3>
+                                <p class="text-slate-400 mb-8 max-w-md mx-auto leading-relaxed">10 câu hỏi ngắn gọn giúp chúng tôi hiểu rõ "nỗi đau" vận hành của bạn và đề xuất giải pháp AI chính xác nhất.</p>
+                                <button onclick="startSurvey()" class="px-8 py-4 rounded-full bg-ggblue text-white font-bold hover:bg-blue-600 hover:shadow-[0_0_25px_rgba(66,133,244,0.5)] transition-all transform hover:-translate-y-1">
+                                    Bắt đầu Làm Khảo Sát
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                .slide-out-left { animation: slideOutLeft 0.5s forwards cubic-bezier(0.4, 0, 0.2, 1); }
+                .slide-in-right { animation: slideInRight 0.5s forwards cubic-bezier(0.4, 0, 0.2, 1); }
+                @keyframes slideOutLeft { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-50px); opacity: 0; } }
+                @keyframes slideInRight { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+                .option-btn { position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+                .option-btn:hover { transform: scale(1.02) translateY(-2px); box-shadow: 0 0 20px rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+                .option-btn:active { transform: scale(0.98); }
+
+                .hover-glow-blue:hover { box-shadow: 0 0 20px rgba(66, 133, 244, 0.3); border-color: rgba(66, 133, 244, 0.5); }
+                .hover-glow-red:hover { box-shadow: 0 0 20px rgba(234, 67, 53, 0.3); border-color: rgba(234, 67, 53, 0.5); }
+                .hover-glow-yellow:hover { box-shadow: 0 0 20px rgba(251, 188, 5, 0.3); border-color: rgba(251, 188, 5, 0.5); }
+                .hover-glow-green:hover { box-shadow: 0 0 20px rgba(52, 168, 83, 0.3); border-color: rgba(52, 168, 83, 0.5); }
+
+                .selected-blue { background-color: rgba(66, 133, 244, 0.15) !important; border-color: #4285F4 !important; }
+                .selected-red { background-color: rgba(234, 67, 53, 0.15) !important; border-color: #EA4335 !important; }
+                .selected-yellow { background-color: rgba(251, 188, 5, 0.15) !important; border-color: #FBBC05 !important; }
+                .selected-green { background-color: rgba(52, 168, 83, 0.15) !important; border-color: #34A853 !important; }
+
+                .ripple-effect { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.3); transform: scale(0); animation: ripple 0.6s linear; pointer-events: none; }
+                @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+                .expandable-input { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+                .expandable-input.expanded { max-height: 80px; opacity: 1; margin-top: 0.75rem; }
+            </style>
+        </section>
+
+        <!-- Section 3: AI Keyword Search -->
+        <section id="keyword" class="min-h-[70vh] flex flex-col items-center justify-center py-24 px-4 relative overflow-hidden z-20 bg-darkbg border-t border-slate-800">
+            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-64 bg-purple-500/10 blur-[150px] pointer-events-none"></div>
+
+            <div class="max-w-3xl mx-auto w-full text-center z-10">
+                <span class="text-purple-400 font-semibold tracking-wider text-sm uppercase mb-4 block animate-pulse">Semantic Search Assistant</span>
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-10">Tra Cứu Thông Minh</h2>
+                
+                <div class="relative group max-w-2xl mx-auto">
+                    <div id="search-glow" class="absolute -inset-1 bg-gradient-to-r from-ggblue via-purple-500 to-ggred rounded-full blur opacity-30 transition-all duration-1000"></div>
+                    
+                    <div class="relative flex flex-col md:flex-row items-center bg-surface border border-slate-700 rounded-[2rem] overflow-hidden p-2 md:p-2 shadow-2xl">
+                        <svg class="w-6 h-6 text-slate-400 ml-4 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        
+                        <input type="text" id="keyword-input" placeholder="Nhu cầu của bạn? (VD: 'Tôi muốn hệ thống tự động lọc email...')" class="w-full bg-transparent border-none focus:outline-none text-white px-4 py-3 placeholder-slate-500 font-medium" onkeypress="if(event.key === 'Enter') handleAISearch()">
+                        
+                        <button onclick="handleAISearch()" id="keyword-btn" class="w-full md:w-auto bg-gradient-to-r from-purple-600 to-ggblue hover:from-purple-500 hover:to-blue-500 text-white px-6 md:px-8 py-3.5 rounded-full font-bold transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex-shrink-0 flex items-center justify-center gap-2 mt-2 md:mt-0 active:scale-95">
+                            <span id="keyword-text" class="flex items-center gap-2">
+                                Khám Phá Bằng AI <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3l-1.5 3.5L14 8l3.5 1.5L19 13l1.5-3.5L24 8l-3.5-1.5L19 3zm-6 2l-1.5 6L5 13l6.5 1.5L13 21l1.5-6L21 13l-6.5-1.5L13 5z"/></svg>
+                            </span>
+                            <svg id="keyword-spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="keyword-results" class="mt-8 max-w-2xl mx-auto w-full text-left hidden p-6 bg-surface/80 border border-slate-700 rounded-2xl shadow-xl backdrop-blur-md transition-all duration-500 transform scale-95 opacity-0">
+                    <div class="flex items-center gap-2 mb-4 text-purple-400 font-semibold border-b border-slate-700 pb-3">
+                        <svg class="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3l-1.5 3.5L14 8l3.5 1.5L19 13l1.5-3.5L24 8l-3.5-1.5L19 3zm-6 2l-1.5 6L5 13l6.5 1.5L13 21l1.5-6L21 13l-6.5-1.5L13 5z"/></svg>
+                        Gemini AI Response
+                    </div>
+                    <div id="keyword-content" class="text-slate-200 leading-relaxed text-base min-h-[60px] font-medium"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: The Hub -->
+        <section id="hub" class="min-h-screen py-24 px-4 bg-[#030610] relative z-30">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Kho Giải Pháp (The Hub)</h2>
+                        <p class="text-slate-400">Khám phá hàng loạt Use Cases thực tiễn được đồng bộ trực tiếp từ Data Source.</p>
+                    </div>
+                    <div class="flex bg-slate-900 border border-slate-800 p-1 rounded-xl" id="hub-toggle-wrapper">
+                        <button id="toggle-list" onclick="toggleHubView('list')" class="px-6 py-2.5 rounded-lg text-slate-500 hover:text-slate-300 font-medium text-sm border border-transparent transition-all">Sắp xếp ID</button>
+                        <button id="toggle-interest" onclick="toggleHubView('interest')" class="px-6 py-2.5 rounded-lg bg-surface shadow-sm text-white border border-slate-700 font-semibold text-sm transition-colors">Độ Hot cao nhất</button>
+                    </div>
+                </div>
+
+                <div id="hub-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-full text-center py-20 text-slate-500 animate-pulse font-semibold">
+                        Đang đồng bộ dữ liệu Use Cases từ Google Sheets...
+                    </div>
+                </div>
+
+                <div id="hub-pagination" class="mt-12 text-center hidden">
+                    <button onclick="loadMoreCards()" class="px-8 py-3.5 rounded-full bg-surface border border-slate-700 hover:border-ggblue hover:bg-slate-800 text-slate-300 hover:text-white transition-all font-semibold shadow-lg hover:shadow-[0_0_15px_rgba(66,133,244,0.3)] inline-flex items-center gap-2 active:scale-95">
+                        Xem thêm toàn bộ giải pháp
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                </div>
+
+                <div id="hub-fallback" class="col-span-full text-center py-20 hidden border border-slate-800 rounded-3xl bg-surface/50 mt-8">
+                    <div class="w-20 h-20 bg-darkbg rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-700 shadow-xl">
+                        <span class="text-4xl">💡</span>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-ggyellow via-ggred to-purple-500">Thách thức của bạn rất đặc thù!</h3>
+                    <p class="text-slate-400 mb-8 max-w-lg mx-auto text-lg">AI Gemini đã quét sâu vào dữ liệu nhưng chưa tìm thấy quy trình mẫu nào trùng khớp hoàn toàn. Tuy nhiên, mọi thứ đều có thể tự động hóa.</p>
+                    <button onclick="openCustomDemo()" class="px-8 py-4 rounded-full bg-ggred text-white font-bold hover:bg-red-600 shadow-[0_0_30px_rgba(234,67,53,0.4)] transition-all transform hover:-translate-y-1 inline-flex items-center gap-2 active:scale-95 text-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Gửi yêu cầu thiết kế riêng cho CloudAZ
+                    </button>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-surface border-t border-white/5 pt-16 pb-8 px-4 relative z-40">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-slate-500 text-sm">
+            <div class="font-semibold text-slate-300 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-ggred inline-block"></span>
+                <span>CloudAZ x Google Cloud</span>
+            </div>
+            <p>&copy; 2026 CloudAZ. All rights reserved.</p>
+            <div class="flex gap-6">
+                <a href="javascript:void(0)" onclick="openBottomSheet('terms')" class="hover:text-white transition-colors">Điều khoản</a>
+                <a href="javascript:void(0)" onclick="openBottomSheet('privacy')" class="hover:text-white transition-colors">Bảo mật</a>
+                <a href="javascript:void(0)" onclick="openBottomSheet('contact')" class="hover:text-white transition-colors">Liên hệ</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Hub Detail Modal -->
+    <div id="hub-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-darkbg/90 backdrop-blur-sm" onclick="closeHubModal()"></div>
+        <div id="hub-modal-content" class="relative w-full max-w-3xl bg-surface border border-slate-700 rounded-3xl p-6 md:p-10 shadow-2xl transition-all duration-300 transform scale-95 opacity-0 overflow-y-auto max-h-[90vh]">
+            <button onclick="closeHubModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-2 rounded-full transition-all border border-slate-600 shadow-lg group">
+                <svg class="w-5 h-5 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="inline-flex px-3 py-1 bg-slate-800 text-xs font-bold uppercase rounded-full text-slate-300 mb-6 border border-slate-700" id="hm-dept"></div>
+            <h3 class="text-2xl md:text-3xl font-bold text-white mb-6 pr-10" id="hm-title"></h3>
+            
+            <div class="space-y-6">
+                <div class="bg-darkbg rounded-xl p-5 border border-slate-800/50">
+                    <h4 class="text-xs font-bold uppercase text-slate-500 tracking-widest mb-2 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-ggred"></span>Nỗi đau (Pain Point)
+                    </h4>
+                    <p class="text-red-300 text-sm md:text-base leading-relaxed" id="hm-pain"></p>
+                </div>
+                
+                <div class="bg-darkbg rounded-xl p-5 border border-slate-800/50">
+                    <h4 class="text-xs font-bold uppercase text-slate-500 tracking-widest mb-2 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-gggreen"></span>Giải pháp AI
+                    </h4>
+                    <p class="text-green-400 font-medium text-sm md:text-base leading-relaxed" id="hm-solution"></p>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span class="text-xl">🤖</span> Boss-Impression Prompt
+                        </h4>
+                        <button onclick="copyPrompt()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-gggreen/20 hover:text-green-400 text-slate-300 text-xs font-semibold transition-all border border-slate-700 hover:border-gggreen group active:scale-95">
+                            <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            <span id="copy-text">Copy Prompt</span>
+                        </button>
+                    </div>
+                    <div class="bg-slate-800 rounded-xl p-5 border border-slate-700 relative overflow-hidden group">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-gggreen"></div>
+                        <pre class="font-mono text-sm text-green-400 whitespace-pre-wrap leading-relaxed" id="hm-prompt"></pre>
+                    </div>
+                </div>
+
+                <div id="hm-tutorial-container" class="hidden pt-4">
+                    <a id="hm-tutorial-link" href="#" target="_blank" class="w-full py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all border border-slate-600 flex items-center justify-center gap-2 group">
+                        <svg class="w-6 h-6 text-red-500 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                        Xem Video Hướng dẫn
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Modal -->
+    <div id="demo-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-darkbg/90 backdrop-blur-sm" onclick="closeDemoModal()"></div>
+        <div id="demo-modal-content" class="relative w-full max-w-md bg-surface border border-slate-700 rounded-3xl p-6 md:p-8 shadow-2xl transition-all duration-300 transform scale-95 opacity-0">
+            <button onclick="closeDemoModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-full bg-ggred/20 flex items-center justify-center mx-auto mb-4 border border-ggred/50">
+                    <svg class="w-6 h-6 text-ggred" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white">Yêu cầu Demo</h3>
+                <p class="text-sm text-slate-400 mt-2">Đội ngũ kỹ sư CloudAZ sẽ liên hệ ngay lập tức.</p>
+            </div>
+            
+            <form id="demo-form" onsubmit="handleDemoSubmit(event)" class="space-y-4">
+    <div>
+        <label class="text-slate-300 text-xs mb-1 block">Họ và tên <span class="text-ggred">*</span></label>
+        <input type="text" id="demo-name" placeholder="Nguyễn Văn A" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-ggred transition-all">
+    </div>
+    <div>
+        <label class="text-slate-300 text-xs mb-1 block">Email công việc <span class="text-ggred">*</span></label>
+        <input type="email" id="demo-email" placeholder="email@congty.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-ggred transition-all">
+    </div>
+    <div>
+        <label class="text-slate-300 text-xs mb-1 block">Số điện thoại <span class="text-ggred">*</span></label>
+        <input type="tel" id="demo-phone" placeholder="0901xxxxxx" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-ggred transition-all">
+    </div>
+    <div>
+        <label class="text-slate-300 text-xs mb-1 block">Tên công ty <span class="text-ggred">*</span></label>
+        <input type="text" id="demo-company" placeholder="Công ty TNHH..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-ggred transition-all">
+    </div>
+    <div>
+        <label class="text-slate-300 text-xs mb-1 block">Nhu cầu cụ thể của bạn</label>
+        <textarea id="demo-needs" rows="3" placeholder="Chia sẻ thêm về nhu cầu của bạn (Không bắt buộc)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-ggred transition-all resize-none"></textarea>
+    </div>
+    
+    <button type="submit" id="demo-submit-btn" class="w-full py-4 rounded-xl bg-ggred text-white font-bold hover:bg-red-600 transition-all flex items-center justify-center gap-2 mt-4">
+        <span id="demo-btn-text">Gửi yêu cầu Demo</span>
+    </button>
+</form>
+
+            
+            <div id="demo-success" class="absolute inset-0 bg-surface rounded-3xl flex flex-col items-center justify-center p-8 hidden opacity-0 transition-opacity z-10 text-center border border-gggreen/50">
+                <div class="w-16 h-16 rounded-full bg-gggreen/20 flex items-center justify-center mb-4 text-gggreen">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Thành công!</h3>
+                <p class="text-slate-400">Yêu cầu của bạn đã được ghi nhận. Chúng tôi sẽ liên hệ trong tích tắc.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet Base -->
+    <div id="bottom-sheet" class="fixed inset-0 z-[100] hidden flex-col justify-end">
+        <div id="bs-backdrop" class="absolute inset-0 bg-darkbg/80 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="closeBottomSheet()"></div>
+        <div id="bs-panel" class="relative w-full bg-surface rounded-t-[2rem] border-t border-slate-700 p-6 md:p-10 transform translate-y-full transition-transform duration-500 ease-out max-h-[80vh] overflow-y-auto">
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-8 cursor-pointer" onclick="closeBottomSheet()"></div>
+            <h3 class="text-2xl font-bold text-white mb-6" id="bs-title"></h3>
+            <div class="text-slate-400 leading-relaxed max-w-3xl mx-auto" id="bs-content"></div>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        const API_KEY = 'AIzaSyAec-iEfWL6nhurpqhMW5l8XMwRhseXFdk';
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0bqOwslkWrmqW6QP1oOJy3JcXs4_EibefOIvgQh3BLbjK2FPcFBmqldniSqbPngNqDbRUkoVz27J9/pub?output=csv';
+        const GOOGLE_APP_SCRIPT_WEBHOOK = 'https://script.google.com/macros/library/d/1RTmgQMaMuDH_-Oopn2euJCyGCeqwaAVix7ucrwsGfYxAC-S_4VQieX7I/6';
+
+        window.hubData = [];
+        let limitRender = 6;
+        let isFilteredView = false;
+        
+        const googleColors = [{ name: 'blue', hex: '#4285F4' }, { name: 'red', hex: '#EA4335' }, { name: 'yellow', hex: '#FBBC05' }, { name: 'green', hex: '#34A853' }];
+        const surveyQuestions = [
+            { group: 'Định vị "Nỗi đau" vận hành', q: 'Nếu được "xóa sổ" một tác vụ lặp đi lặp lại khiến nhân viên mệt mỏi nhất, đó sẽ là gì?', opts: ['A. Soạn báo cáo định kỳ hàng tuần.', 'B. Tìm kiếm email hoặc tài liệu cũ thất lạc.', 'C. Nhập liệu thủ công từ file này sang file khác.', 'D. Khác...'] },
+            { group: 'Định vị "Nỗi đau" vận hành', q: 'Bạn ước tính mỗi ngày một nhân sự mất bao nhiêu thời gian chỉ để tìm kiếm thông tin/tài liệu?', opts: ['A. Dưới 30 phút (Rất tốt).', 'B. Từ 1 - 2 tiếng (Lãng phí).', 'C. Trên 2 tiếng (Báo động đỏ).', 'D. Khác...'] },
+            { group: 'Định vị "Nỗi đau" vận hành', q: 'Đã bao giờ doanh nghiệp gặp sự cố do nhân viên nghỉ việc và mang theo toàn bộ dữ liệu/liên lạc chưa?', opts: ['A. Đã từng và chịu thiệt hại lớn.', 'B. May mắn là chưa nhưng rất lo ngại.', 'C. Hệ thống của tôi đã bảo mật tuyệt đối phần này.', 'D. Khác...'] },
+            { group: 'Nhận thức & Kỳ vọng về AI', q: 'Trên thang điểm 10, bạn đánh giá mức độ sẵn sàng ứng dụng AI vào công việc của đội ngũ mình là bao nhiêu?', opts: ['A. 1-3 (Mới nghe tên AI).', 'B. 4-7 (Có dùng nhưng chưa bài bản).', 'C. 8-10 (Sẵn sàng bùng nổ).', 'D. Khác...'] },
+            { group: 'Nhận thức & Kỳ vọng về AI', q: 'Điều gì khiến doanh nghiệp của bạn chưa triển khai AI mạnh mẽ?', opts: ['A. Chi phí đầu tư còn cao.', 'B. Không biết bắt đầu từ đâu/thiếu nhân sự.', 'C. Sợ khó dùng và nhân viên không thích nghi được.', 'D. Khác...'] },
+            { group: 'Nhận thức & Kỳ vọng về AI', q: 'Nếu có một trợ lý AI soạn thảo hợp đồng và email chuẩn chỉnh trong 10 giây, bạn sẽ dùng thời gian tiết kiệm được để làm gì?', opts: ['A. Tìm kiếm thêm khách hàng mới.', 'B. Đào tạo và nâng cấp đội ngũ.', 'C. Cho nhân viên nghỉ ngơi sớm hơn.', 'D. Khác...'] },
+            { group: 'Insight về Google Workspace', q: 'Ngoài Email và Drive, tính năng nào của Google bạn dùng nhiều nhất?', opts: ['A. Google Meet (Họp trực tuyến).', 'B. Google Sheets/Docs (Cộng tác).', 'C. Google Calendar (Quản lý lịch trình).', 'D. Khác...'] },
+            { group: 'Insight về Google Workspace', q: 'Bạn có quan tâm đến việc tích hợp quy trình phê duyệt ngay trên các công cụ Google đang dùng không?', opts: ['A. Rất quan tâm, đang cần ngay.', 'B. Có thể sẽ cần trong tương lai.', 'C. Đã có hệ thống riêng, không cần thêm.', 'D. Khác...'] },
+            { group: 'Insight về Google Workspace', q: 'Bạn tự tin bao nhiêu % về độ an toàn của dữ liệu trước các cuộc tấn công lừa đảo (Phishing) hiện nay?', opts: ['A. Dưới 50% (Rất lo lắng).', 'B. 50-80% (Cần cải thiện thêm).', 'C. Trên 90% (Rất tự tin).', 'D. Khác...'] },
+            { group: 'Chốt hạ', q: 'Một tính năng "trong mơ" mà bạn muốn Google có để phục vụ riêng cho ngành của bạn là gì?<br><span class="text-sm font-normal text-slate-400 mt-2 block">(Chỉ cần nhập ý tưởng của bạn hoặc chọn Bỏ qua để nhận lộ trình)</span>', opts: [], isFinal: true }
+        ];
+        let currentQ = -1;
+let globalSurveyAnswers = new Array(10).fill("-"); // Mảng lưu 10 câu trả lời của khách
+
+        // Fetch Data on Load
+        window.addEventListener('DOMContentLoaded', () => { fetchHubData(); });
+
+        function fetchHubData() {
+            Papa.parse(SHEET_CSV_URL, {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    let rawData = results.data.filter(r => r.ID && r.ID.trim() !== "");
+                    rawData.sort((a,b) => {
+                        let viewB = parseInt(b['Interest Level'] || b['Views'] || 0);
+                        let viewA = parseInt(a['Interest Level'] || a['Views'] || 0);
+                        return viewB - viewA;
+                    });
+                    window.hubData = rawData;
+                    console.log("Dữ liệu nạp thành công:", window.hubData);
+                    renderHubCards(window.hubData.slice(0, limitRender), false);
+                    checkPaginationStatus(window.hubData.length);
+                },
+                error: function() {
+                    document.getElementById('hub-container').innerHTML = '<div class="col-span-full text-center text-ggred font-bold py-10">Lỗi kết nối dữ liệu! Hãy kiểm tra link Sheet hoặc CORS.</div>';
+                }
+            });
+        }
+
+        function loadMoreCards() {
+            limitRender += 100;
+            renderHubCards(window.hubData.slice(0, limitRender), false);
+            checkPaginationStatus(window.hubData.length);
+        }
+
+        function checkPaginationStatus(totalAvailable) {
+            const btn = document.getElementById('hub-pagination');
+            if(isFilteredView || limitRender >= totalAvailable) {
+                btn.classList.add('hidden');
+            } else {
+                btn.classList.remove('hidden');
+            }
+        }
+
+        // Render Hub Output
+        function renderHubCards(dataArray, highlightMatch = false) {
+            const container = document.getElementById('hub-container');
+            const fallback = document.getElementById('hub-fallback');
+            const toggleWrap = document.getElementById('hub-toggle-wrapper');
+            
+            container.innerHTML = '';
+            
+            if(dataArray.length === 0) {
+                container.classList.add('hidden');
+                fallback.classList.remove('hidden');
+                toggleWrap.classList.add('opacity-50', 'pointer-events-none');
+                return;
+            } else {
+                container.classList.remove('hidden');
+                fallback.classList.add('hidden');
+                toggleWrap.classList.remove('opacity-50', 'pointer-events-none');
+            }
+
+            dataArray.forEach((item, index) => {
+                const colorCode = googleColors[index % 4].name;
+                const viewsStr = item['Interest Level'] || item['Views'] || '0';
+                const viewsNum = parseInt(viewsStr);
+                
+                let hotBorderClass = '';
+                let hotGlowClass = `glow-${colorCode}`;
+                let flameClass = 'text-orange-500';
+                
+                if(viewsNum >= 2000) {
+                    hotBorderClass = 'border-ggyellow/60 shadow-[0_0_20px_rgba(251,188,5,0.15)] ring-1 ring-ggyellow/30';
+                    hotGlowClass = `glow-yellow hover:-translate-y-3`;
+                    flameClass = 'text-ggyellow animate-pulse drop-shadow-[0_0_8px_rgba(251,188,5,0.8)]';
+                }
+
+                let highlightModifier = highlightMatch ? 'ring-4 ring-purple-500 scale-[1.02] delay-100 z-10' : '';
+
+                const card = document.createElement('div');
+                card.className = `h-72 lg:h-80 bg-surface rounded-2xl border border-slate-800 ${hotGlowClass} p-6 flex flex-col transition-all duration-500 cursor-pointer group hover:bg-surface/90 shadow-lg relative ${hotBorderClass} ${highlightModifier}`;
+                
+                card.onclick = () => openHubModal(item.ID);
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="inline-flex px-3 py-1 bg-slate-800 text-xs font-bold uppercase rounded-full text-slate-300 border border-slate-700 group-hover:border-${colorCode}-500 transition-colors">
+                            ${item.Department || 'General'}
+                        </div>
+                        <div class="flex items-center gap-1.5 text-xs font-bold bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800">
+                            <span class="${flameClass} text-sm">🔥</span>
+                            <span class="${viewsNum >= 2000 ? 'text-ggyellow' : 'text-slate-300'}">${viewsNum.toLocaleString('en-US')}</span>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 line-clamp-2 leading-snug group-hover:text-ggblue transition-colors">${item['Use Case Title'] || 'Unknown Title'}</h3>
+                    <p class="text-sm text-slate-400 mb-auto line-clamp-3 leading-relaxed border-l-2 border-slate-700 pl-3">
+                        <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider block mb-1">Pain Point</span>
+                        ${item['Pain Point'] || 'Không rõ'}
+                    </p>
+                    <div class="w-full py-3 mt-4 text-center rounded-xl bg-slate-800/50 text-slate-300 text-sm font-semibold group-hover:bg-ggblue group-hover:text-white transition-all border border-slate-700 group-hover:border-ggblue">
+                        Xem chi tiết & Prompt
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Toggle Switch Hub
+        function toggleHubView(mode) {
+            isFilteredView = false;
+            const btnList = document.getElementById('toggle-list');
+            const btnInterest = document.getElementById('toggle-interest');
+            const classActive = 'bg-surface shadow-sm text-white border-slate-700 font-semibold';
+            const classInactive = 'text-slate-500 hover:text-slate-300 border-transparent font-medium';
+
+            if(mode === 'list') {
+                btnList.className = `px-6 py-2.5 rounded-lg transition-all text-sm border ${classActive}`;
+                btnInterest.className = `px-6 py-2.5 rounded-lg transition-all text-sm border ${classInactive}`;
+                
+                let sortedData = [...window.hubData].sort((a,b) => a.ID.localeCompare(b.ID));
+                renderHubCards(sortedData.slice(0, Math.max(limitRender, 6)), false);
+            } else {
+                btnInterest.className = `px-6 py-2.5 rounded-lg transition-all text-sm border ${classActive}`;
+                btnList.className = `px-6 py-2.5 rounded-lg transition-all text-sm border ${classInactive}`;
+                
+                let sortedData = [...window.hubData].sort((a,b) => parseInt(b['Interest Level'] || b['Views'] || 0) - parseInt(a['Interest Level'] || a['Views'] || 0));
+                renderHubCards(sortedData.slice(0, Math.max(limitRender, 6)), false);
+            }
+            checkPaginationStatus(window.hubData.length);
+        }
+
+        // Hub Detail Modal
+        function openHubModal(id, e) {
+            if(e) e.preventDefault();
+            const item = window.hubData.find(x => x.ID === id);
+            if(!item) return;
+
+            document.getElementById('hm-dept').innerText = item.Department || 'N/A';
+            document.getElementById('hm-title').innerText = item['Use Case Title'] || '';
+            document.getElementById('hm-pain').innerText = item['Pain Point'] || '';
+            document.getElementById('hm-solution').innerText = item['AI Solution'] || '';
+            
+            const promptText = item['Boss-Impression Prompt'] || item['Prompt'] || '';
+            document.getElementById('hm-prompt').innerText = promptText;
+            
+            const tubeContainer = document.getElementById('hm-tutorial-container');
+            const tubeLink = document.getElementById('hm-tutorial-link');
+            if(item['Tutorial Link/Video'] && item['Tutorial Link/Video'].trim().startsWith('http')) {
+                tubeLink.href = item['Tutorial Link/Video'];
+                tubeContainer.classList.remove('hidden');
+            } else {
+                tubeContainer.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('hub-modal');
+            const content = document.getElementById('hub-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex', 'opacity-100');
+            
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeHubModal() {
+            const modal = document.getElementById('hub-modal');
+            const content = document.getElementById('hub-modal-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.getElementById('copy-text').innerText = 'Copy Prompt';
+            }, 300);
+        }
+
+        function copyPrompt() {
+            const promptText = document.getElementById('hm-prompt').innerText;
+            navigator.clipboard.writeText(promptText).then(() => {
+                document.getElementById('copy-text').innerText = 'Copied!';
+                setTimeout(() => { document.getElementById('copy-text').innerText = 'Copy Prompt'; }, 2000);
+            });
+        }
+
+        // Demo Actions
+        function openDemoModal(e) {
+            if(e) e.preventDefault();
+            const modal = document.getElementById('demo-modal');
+            const content = document.getElementById('demo-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex', 'opacity-100');
+            document.getElementById('demo-success').classList.add('hidden');
+            
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeDemoModal() {
+            const modal = document.getElementById('demo-modal');
+            const content = document.getElementById('demo-modal-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        }
+
+        function openCustomDemo() {
+            const inputVal = document.getElementById('keyword-input').value.trim();
+            openDemoModal();
+            if(inputVal) {
+                document.getElementById('demo-needs').value = "Tôi tìm kiếm nhu cầu này nhưng chưa thấy mẫu: " + inputVal;
+            }
+        }
+
+function handleDemoSubmit(e) {
+    if (e) e.preventDefault();
+    
+    const fieldsToValidate = [{ id: 'demo-name', required: true }, { id: 'demo-email', required: true }, { id: 'demo-phone', required: true }, { id: 'demo-company', required: true }];
+    let isValid = true;
+    fieldsToValidate.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (field.required && !input.value.trim()) { input.classList.add('input-error'); isValid = false; } 
+        else { input.classList.remove('input-error'); }
+    });
+    if (!isValid) return;
+
+    const btnText = document.getElementById('demo-btn-text');
+    const submitBtn = document.getElementById('demo-submit-btn');
+    
+    const payload = {
+        formType: "DEMO",
+        Name: document.getElementById('demo-name').value.trim(),
+        Email: document.getElementById('demo-email').value.trim(),
+        Phone: document.getElementById('demo-phone').value.trim(),
+        Company: document.getElementById('demo-company').value.trim(),
+        Needs: document.getElementById('demo-needs').value.trim()
+    };
+
+    btnText.innerText = 'Đang gửi...';
+    submitBtn.disabled = true;
+
+    google.script.run
+      .withSuccessHandler(function(response) {
+          if (response === "ThanhCong") {
+              document.getElementById('demo-success').classList.remove('hidden');
+              document.getElementById('demo-success').classList.add('opacity-100');
+              setTimeout(() => {
+                  closeDemoModal();
+                  document.getElementById('demo-form').reset();
+                  document.getElementById('demo-success').classList.add('hidden');
+                  document.getElementById('demo-success').classList.remove('opacity-100');
+              }, 2500);
+          } else {
+              alert(response); 
+          }
+          submitBtn.disabled = false;
+          btnText.innerText = 'Gửi yêu cầu Demo';
+      })
+      .xuLyDuLieuMoi(payload); 
+}
+
+
+
+        // AI Keyword Semantic Search Array Logic
+        async function handleAISearch(e) {
+            if(e) e.preventDefault();
+            const inputVal = document.getElementById('keyword-input').value.trim();
+            if(!inputVal) return;
+
+            const resultsContainer = document.getElementById('keyword-results');
+            const contentBox = document.getElementById('keyword-content');
+
+            if(!window.hubData || window.hubData.length === 0) {
+                resultsContainer.classList.remove('hidden');
+                setTimeout(() => { resultsContainer.classList.add('scale-100', 'opacity-100'); }, 10);
+                contentBox.innerHTML = '<span class="text-ggred font-medium">Lỗi: Chưa tải được dữ liệu, vui lòng đợi thêm chút...</span>';
+                return;
+            }
+
+            const btn = document.getElementById('keyword-btn');
+            const spinner = document.getElementById('keyword-spinner');
+            const btnText = document.getElementById('keyword-text');
+            const glow = document.getElementById('search-glow');
+
+            btn.disabled = true;
+            btnText.innerHTML = "Đang chạy AI";
+            spinner.classList.remove('hidden');
+            glow.classList.add('animate-pulse', 'opacity-100');
+            
+            resultsContainer.classList.remove('hidden');
+            resultsContainer.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => { resultsContainer.classList.add('scale-100', 'opacity-100'); }, 10);
+            
+            contentBox.innerHTML = '<span class="animate-pulse text-purple-400">Đang tìm giải pháp tự động...</span>';
+
+            try {
+                let contextLines = window.hubData.map(r => `[ID: ${r.ID}] ${r['Use Case Title']} - Nỗi đau: ${r['Pain Point']}`).join('\\n');
+                
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+                const promptText = `Dựa trên danh sách Use Cases trong dữ liệu Sheet dưới đây:\n---\n${contextLines}\n---\nYêu cầu khách hàng: "${inputVal}"\n\nHãy tìm ID phù hợp nhất cho yêu cầu khách hàng.\nTRẢ VỀ ĐÚNG FORMAT JSON DƯỚI ĐÂY (Không giải thích thêm):\n{"ids": ["ID1"], "explanation": "Lời tư vấn ngắn 1 câu..."}`;
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                });
+
+                const apiData = await response.json();
+                
+                if (apiData.candidates && apiData.candidates[0].content.parts[0].text) {
+                    let aiText = apiData.candidates[0].content.parts[0].text.trim();
+                    if(aiText.startsWith('```json')) aiText = aiText.substring(7, aiText.length-3).trim();
+                    else if(aiText.startsWith('```')) aiText = aiText.substring(3, aiText.length-3).trim();
+                    
+                    let resultJson;
+                    try {
+                        resultJson = JSON.parse(aiText);
+                    } catch(jsonErr) {
+                        resultJson = { ids: [], explanation: "Tuyệt vời, nhu cầu của bạn đang được phân tích..." };
+                    }
+                    
+                    typeWriterEffect(contentBox, resultJson.explanation, 20);
+
+                    const matchedIDs = resultJson.ids || [];
+                    if (matchedIDs.length > 0) {
+                        setTimeout(() => openHubModal(matchedIDs[0]), 1000);
+                        let matchedCard = document.querySelector(`[onclick="openHubModal('${matchedIDs[0]}')"]`);
+                        if(matchedCard) {
+                            matchedCard.classList.add('ring-4', 'ring-purple-500', 'scale-[1.02]');
+                            setTimeout(() => { matchedCard.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500);
+                        }
+                    }
+                } else {
+                    contentBox.innerHTML = '<span class="text-ggred">Lỗi Server AI.</span>';
+                }
+            } catch (error) {
+                console.error(error);
+                contentBox.innerHTML = '<span class="text-ggred">Lỗi liên kết API.</span>';
+            } finally {
+                btn.disabled = false;
+                spinner.classList.add('hidden');
+                btnText.innerHTML = `Khám Phá Bằng AI <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3l-1.5 3.5L14 8l3.5 1.5L19 13l1.5-3.5L24 8l-3.5-1.5L19 3zm-6 2l-1.5 6L5 13l6.5 1.5L13 21l1.5-6L21 13l-6.5-1.5L13 5z"/></svg>`;
+                glow.classList.remove('animate-pulse', 'opacity-100');
+            }
+        }
+
+        // Bottom Sheet Functions...
+        const sheetData = {
+            'terms': { 
+                title: 'Điều khoản sử dụng', 
+                html: '<p class=\"mb-4\">Chào mừng bạn đến với CloudAZ AI Hub. Bằng việc sử dụng các giải pháp AI này, bạn đồng ý với việc bảo mật dữ liệu doanh nghiệp và sử dụng AI đúng mục đích đạo đức.</p>' 
+            },
+            'privacy': { 
+                title: 'Chính sách Bảo mật', 
+                html: '<p class=\"mb-4\">CloudAZ cam kết bảo mật tuyệt đối các dữ liệu đầu vào của bạn. Chúng tôi sử dụng API chuẩn doanh nghiệp để đảm bảo không dữ liệu nào được lưu trữ trái phép.</p>' 
+            },
+            'contact': { 
+                title: 'Kết nối với Chuyên Gia AI', 
+                html: '<div class=\"space-y-2\"><p>📍 <b>Địa chỉ:</b> Tòa nhà CloudAZ, Quận 1, TP.HCM</p><p>📧 <b>Email:</b> hello@cloudaz.vn</p><p>📞 <b>Hotline:</b> 1900 6789</p></div>' 
+            }
+        };
+
+        function openBottomSheet(id) {
+            const data = sheetData[id];
+            if(!data) return;
+            document.getElementById('bs-title').innerText = data.title;
+            document.getElementById('bs-content').innerHTML = data.html;
+            const sheet = document.getElementById('bottom-sheet');
+            const backdrop = document.getElementById('bs-backdrop');
+            const panel = document.getElementById('bs-panel');
+            sheet.classList.remove('hidden');
+            setTimeout(() => { backdrop.classList.remove('opacity-0'); backdrop.classList.add('opacity-100'); panel.classList.remove('translate-y-full'); }, 10);
+        }
+
+        function closeBottomSheet() {
+            const backdrop = document.getElementById('bs-backdrop');
+            const panel = document.getElementById('bs-panel');
+            backdrop.classList.remove('opacity-100'); backdrop.classList.add('opacity-0'); panel.classList.add('translate-y-full');
+            setTimeout(() => { document.getElementById('bottom-sheet').classList.add('hidden'); }, 500);
+        }
+
+        // Survey Legacy logic (unchanged)
+        function startSurveyFlow(e) { 
+            if(e) e.preventDefault(); 
+            document.getElementById('hero').classList.add('hidden'); 
+            document.getElementById('hero').classList.remove('flex', 'block'); 
+            document.getElementById('survey').classList.remove('hidden'); 
+            document.getElementById('survey').classList.add('flex'); 
+            setTimeout(() => { 
+                document.getElementById('survey').classList.remove('scale-95', 'opacity-0'); 
+                document.getElementById('survey').classList.add('scale-100', 'opacity-100'); 
+                if(currentQ === -1) setTimeout(startSurvey, 300); 
+            }, 50); 
+        }
+        function startSurvey(){ document.getElementById('survey-progress-container').classList.remove('opacity-0'); document.getElementById('survey-progress-dot').classList.remove('opacity-0'); nextQuestion(); }
+        function triggerConfetti(){ const end=Date.now()+4000; const hexes=googleColors.map(c=>c.hex); (function frame(){ confetti({particleCount:6,angle:60,spread:60,origin:{x:0},colors:hexes,zIndex:100}); confetti({particleCount:6,angle:120,spread:60,origin:{x:1},colors:hexes,zIndex:100}); if(Date.now()<end) requestAnimationFrame(frame); }()); }
+// ĐÃ SỬA: Hàm gửi thông tin khảo sát lấy từ biến mảng
+function submitProfile(e) {
+    if (e) e.preventDefault();
+
+    const payload = {
+        formType: "SURVEY",
+        Name: document.getElementById('p-name').value.trim(),
+        Email: document.getElementById('p-email').value.trim(),
+        Phone: document.getElementById('p-phone').value.trim(),
+        Department: document.getElementById('p-department').value.trim(),
+        Industry: document.getElementById('p-industry').value.trim(),
+        Needs: document.getElementById('final-insight') ? document.getElementById('final-insight').value.trim() : globalSurveyAnswers[9], 
+        Answer1: globalSurveyAnswers[0], Answer2: globalSurveyAnswers[1], Answer3: globalSurveyAnswers[2],
+        Answer4: globalSurveyAnswers[3], Answer5: globalSurveyAnswers[4], Answer6: globalSurveyAnswers[5],
+        Answer7: globalSurveyAnswers[6], Answer8: globalSurveyAnswers[7], Answer9: globalSurveyAnswers[8],
+        Answer10: document.getElementById('final-insight') ? document.getElementById('final-insight').value.trim() : globalSurveyAnswers[9]
+    };
+
+    google.script.run
+      .withSuccessHandler(function(response) {
+         console.log("Kết quả từ server: " + response);
+      })
+      .xuLyDuLieuMoi(payload); 
+
+    triggerConfetti();
+    nextQuestion();
+}
+
+
+
+        function addRipple(e,btn){ const r=btn.getBoundingClientRect(); const span=document.createElement('span'); span.className='ripple-effect'; span.style.left=`${e.clientX-r.left}px`; span.style.top=`${e.clientY-r.top}px`; btn.appendChild(span); setTimeout(()=>span.remove(),600); }
+// ĐÃ SỬA: Lưu câu trả lời khi chọn
+function handleSelect(e, btn, isOther, cName, cHex) { 
+    addRipple(e, btn); 
+    const p = btn.parentElement.parentElement; 
+    p.querySelectorAll('.option-btn').forEach(b => { 
+        b.classList.remove('selected', 'selected-blue', 'selected-red', 'selected-yellow', 'selected-green'); 
+        b.querySelector('.circle-outer').style.borderColor = ''; 
+        b.querySelector('.circle-inner').style.backgroundColor = 'transparent'; 
+        const inv = b.nextElementSibling; 
+        if (inv && inv.classList.contains('expandable-input')) inv.classList.remove('expanded'); 
+    }); 
+    
+    btn.classList.add('selected', `selected-${cName}`); 
+    btn.querySelector('.circle-outer').style.borderColor = cHex; 
+    btn.querySelector('.circle-inner').style.backgroundColor = cHex; 
+    
+    // ---> Ghi nhớ câu trả lời khách vừa chọn vào sổ tay tàng hình
+    let answerText = btn.querySelector('span').innerText.trim();
+    globalSurveyAnswers[currentQ] = answerText;
+
+    const nBtn = document.getElementById(`next-btn-container-${currentQ}`); 
+    if (isOther) { 
+        const inv = btn.nextElementSibling; 
+        inv.classList.add('expanded'); 
+        setTimeout(() => inv.querySelector('input').focus(), 100); 
+        if (nBtn) { 
+            nBtn.classList.remove('opacity-0'); 
+            const a = nBtn.querySelector('button'); 
+            if (a) a.innerHTML = 'Xác nhận & Tiếp tục &rarr;'; 
+        } 
+    } else { 
+        if (nBtn) nBtn.classList.add('opacity-0'); 
+        setTimeout(() => nextQuestion(), 500); 
+    } 
+}
+
+// ĐÃ SỬA: Chuyển câu hỏi và lưu câu "Khác"
+function nextQuestion() { 
+    // ---> Nếu khách chọn "Khác" và gõ text, phải lưu lại text đó trước khi chuyển câu
+    if (currentQ >= 0 && currentQ < 10) {
+        let expandedInput = document.querySelector('.expandable-input.expanded input');
+        if (expandedInput && expandedInput.value.trim() !== '') {
+            globalSurveyAnswers[currentQ] = "Khác: " + expandedInput.value.trim();
+        }
+    }
+
+    const c = document.getElementById('survey-content'); 
+    if (currentQ >= 0) { 
+        c.classList.remove('slide-in-right'); 
+        c.classList.add('slide-out-left'); 
+    } 
+    setTimeout(() => { 
+        currentQ++; 
+        if (currentQ < 10) { 
+            const pct = Math.max(0, Math.min(100, Math.round(((currentQ + 1) / 10) * 100))); 
+            document.getElementById('survey-progress-text').innerText = `Câu ${currentQ + 1}/10`; 
+            document.getElementById('survey-percentage-text').innerText = `${pct}%`; 
+            document.getElementById('survey-progress-blocker').style.width = `${100 - pct}%`; 
+            document.getElementById('survey-progress-dot').style.left = `${pct}%`; 
+        } else { 
+            document.getElementById('survey-progress-container').classList.add('opacity-0'); 
+        } 
+        c.innerHTML = generateCardHTML(); 
+        if (currentQ >= 0) { 
+            c.classList.remove('slide-out-left'); 
+            c.classList.add('slide-in-right'); 
+        } 
+    }, currentQ >= 0 ? 400 : 0); 
+}
+
+        function generateProfileScreen() {
+    return `<div class="w-full flex-grow flex flex-col justify-center text-left py-4">
+        <span class="text-ggblue text-xs font-bold uppercase tracking-widest mb-3 block opacity-80">Bước cuối cùng</span>
+        <h3 class="text-xl md:text-3xl font-bold text-white mb-4 leading-snug">Tuyệt vời! Bạn đã hoàn tất chẩn đoán.</h3>
+        <p class="text-slate-400 mb-8 leading-relaxed">Để lại thông tin dưới đây để nhận ngay <strong>Lộ trình AI cá nhân hoá</strong> và giải thưởng độc quyền từ CloudAZ.</p>
+        <form id="profile-form" class="flex flex-col gap-4 w-full" onsubmit="event.preventDefault(); submitProfile(event);">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-slate-300 text-sm font-medium mb-1.5 block">Họ và tên <span class="text-red-500">*</span></label>
+                    <input type="text" id="p-name" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-ggblue focus:ring-1 focus:ring-ggblue/50 transition-colors shadow-inner" placeholder="Nguyễn Văn A">
+                </div>
+                <div>
+                    <label class="text-slate-300 text-sm font-medium mb-1.5 block">Email công việc <span class="text-red-500">*</span></label>
+                    <input type="email" id="p-email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-ggblue focus:ring-1 focus:ring-ggblue/50 transition-colors shadow-inner" placeholder="email@company.com">
+                </div>
+                <div>
+                    <label class="text-slate-300 text-sm font-medium mb-1.5 block">Số điện thoại <span class="text-red-500">*</span></label>
+                    <input type="tel" id="p-phone" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-ggblue focus:ring-1 focus:ring-ggblue/50 transition-colors shadow-inner" placeholder="09xx xxx xxx">
+                </div>
+                <div>
+                    <label class="text-slate-300 text-sm font-medium mb-1.5 block">Phòng ban <span class="text-red-500">*</span></label>
+                    <select id="p-department" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-ggblue focus:ring-1 focus:ring-ggblue/50 transition-colors shadow-inner">
+                        <option value="" disabled selected>-- Chọn phòng ban --</option>
+                        <option value="Ban điều hành">Ban điều hành</option>
+                        <option value="Phòng Kinh doanh/Marketing">Phòng Kinh doanh/Marketing</option>
+                        <option value="Phòng Nhân sự/Hành chính">Phòng Nhân sự/Hành chính</option>
+                        <option value="Phòng Kỹ thuật/IT/Sản xuất">Phòng Kỹ thuật/IT/Sản xuất</option>
+                        <option value="Phòng Tài chính/Kế toán">Phòng Tài chính/Kế toán</option>
+                        <option value="Phòng ban đặc biệt khác">Phòng ban đặc biệt khác</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-slate-300 text-sm font-medium mb-1.5 block">Lĩnh vực hoạt động <span class="text-red-500">*</span></label>
+                    <select id="p-industry" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-ggblue focus:ring-1 focus:ring-ggblue/50 transition-colors shadow-inner">
+                        <option value="" disabled selected>-- Chọn lĩnh vực --</option>
+                        <option value="Sản xuất/Công nghiệp phụ trợ">Sản xuất/Công nghiệp phụ trợ</option>
+                        <option value="Thương mại/Xuất nhập khẩu/Bán lẻ">Thương mại/Xuất nhập khẩu/Bán lẻ</option>
+                        <option value="Công nghệ/Phần mềm/Viễn thông">Công nghệ/Phần mềm/Viễn thông</option>
+                        <option value="Xây dựng/Bất động sản">Xây dựng/Bất động sản</option>
+                        <option value="Dịch vụ F&B/Khách sạn/Du lịch">Dịch vụ F&B/Khách sạn/Du lịch</option>
+                        <option value="Giáo dục/Đào tạo">Giáo dục/Đào tạo</option>
+                        <option value="Logistics/Vận tải">Logistics/Vận tải</option>
+                        <option value="Lĩnh vực khác">Lĩnh vực khác</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-8">
+                <button type="submit" class="w-full py-4 rounded-xl bg-ggblue text-white font-bold hover:bg-blue-600 shadow-[0_0_20px_rgba(66,133,244,0.4)] transition-all flex items-center justify-center gap-2 text-lg hover:scale-[1.01] active:scale-95 group">
+                    Xác nhận & Xem kết quả
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </form>
+    </div>`;
+}
+
+// Dòng 934: Sửa lại hàm này
+function generateEndScreen() { 
+  return `
+    <div class="text-center w-full h-full flex flex-col justify-center items-center py-6">
+      <h3 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-ggyellow via-gggreen to-ggblue mb-4">
+        Hoàn thành chẩn đoán!
+      </h3>
+      <p class="text-slate-400 mb-12 max-w-md mx-auto text-lg leading-relaxed">
+        Hồ sơ của bạn đã được ghi nhận. Quà tặng độc quyền đã sẵn sàng.
+      </p>
+      
+      <button id="gift-btn" 
+        onclick="handleOpenGift()" 
+        class="relative group px-8 md:px-12 py-6 rounded-[2rem] bg-gradient-to-r from-yellow-500 via-ggyellow to-yellow-600 font-extrabold text-lg md:text-2xl text-yellow-950 shadow-[0_0_40px_rgba(251,188,5,0.6)] animate-pulse hover:animate-none transition-all hover:scale-105 active:scale-95 mb-10 border border-yellow-300 overflow-hidden">
+        
+        <div class="absolute inset-0 bg-white opacity-20 group-hover:translate-x-full -translate-x-full transition-transform duration-1000 ease-in-out rotate-45 transform origin-top w-[200%]"></div>
+        
+        <span class="flex items-center justify-center gap-4 relative z-10">
+          <svg class="w-8 h-8 md:w-10 md:h-10 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+          </svg>
+          <span class="drop-shadow-sm">Mở Quà: Ebook Gemini</span>
+        </span>
+      </button>
+
+      <a href="#hub" class="px-8 py-3 rounded-full border border-slate-600 hover:border-ggblue hover:text-ggblue text-slate-300 font-semibold transition-all inline-flex items-center gap-2 hover:-translate-y-1">
+        Khám phá Kho giải pháp ngay &rarr;
+      </a>
+    </div>`; 
+}
+
+// Thêm hàm bổ trợ này vào tệp .gs hoặc trong thẻ <script> để xử lý sự kiện click
+function handleOpenGift() {
+  const btn = document.getElementById('gift-btn');
+  btn.innerHTML = '<span class="relative z-10 flex items-center justify-center gap-3">🎁 Đã Mở Quà Thành Công!</span>';
+  btn.classList.remove('animate-pulse');
+  btn.classList.add('opacity-90', 'scale-95');
+  window.open('https://drive.google.com/drive/folders/1UHTFQaG9jW4DCoMnyqNergiqpX-duYWk?usp=sharing', '_blank');
+}
+        function generateCardHTML() {
+            if (currentQ === 10) return generateProfileScreen();
+            if (currentQ > 10) return generateEndScreen();
+            const qData = surveyQuestions[currentQ];
+            let html = `<div class="w-full flex-grow flex flex-col justify-center text-left"><span class="text-ggyellow text-xs font-bold uppercase tracking-widest mb-3 block opacity-80">${qData.group}</span><h3 class="text-xl md:text-2xl font-bold text-white mb-8 leading-snug">${qData.q}</h3>`;
+            if(qData.isFinal) { html += `<textarea id="final-insight" rows="3" class="w-full bg-slate-800/80 border border-slate-600 rounded-xl p-5 text-white focus:outline-none focus:border-ggblue focus:ring-1 focus:ring-ggblue transition-all resize-none mb-6 text-base md:text-lg" placeholder="Nhập tính năng trong mơ của bạn..."></textarea><div class="flex gap-4 mt-auto pt-4"><button onclick="nextQuestion()" class="flex-1 py-4 rounded-xl border border-slate-600 text-slate-300 font-semibold hover:bg-slate-700 transition-all hover:scale-105 active:scale-95">Bỏ qua</button><button onclick="nextQuestion()" class="flex-1 py-4 rounded-xl bg-ggblue text-white font-bold hover:bg-blue-600 shadow-[0_0_20px_rgba(66,133,244,0.4)] transition-all hover:scale-105 active:scale-95">Hoàn thành</button></div></div>`; } else {
+                html += `<div class="flex flex-col gap-3">`;
+                qData.opts.forEach((opt, i) => { const isOther = opt.includes('Khác'); const c = googleColors[i%4]; html += `<div><button onclick="handleSelect(event, this, ${isOther}, '${c.name}', '${c.hex}')" class="option-btn hover-glow-${c.name} w-full text-left py-3.5 px-5 md:py-4 rounded-[14px] border border-slate-700/80 bg-slate-800/40 text-slate-200 font-medium flex items-center justify-between group"><span class="pr-4 leading-relaxed">${opt}</span><div class="circle-outer w-5 h-5 flex-shrink-0 rounded-full border-2 border-slate-500 flex items-center justify-center transition-colors shadow-inner" data-chex="${c.hex}"><div class="circle-inner w-2 h-2 rounded-full bg-transparent transition-all"></div></div></button>${isOther ? `<div class="expandable-input"><input type="text" placeholder="Ghi chú thêm..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-ggblue focus:ring-1 focus:ring-ggblue/50 transition-colors shadow-inner"></div>` : ''}</div>`; });
+                html += `</div><div class="mt-8 text-right opacity-0 transition-opacity duration-500" id="next-btn-container-${currentQ}"><button onclick="nextQuestion()" class="px-8 py-3 rounded-full bg-slate-700 hover:bg-ggblue hover:shadow-[0_0_15px_rgba(66,133,244,0.4)] text-white font-semibold transition-all inline-flex items-center gap-2 hover:-translate-y-1 active:translate-y-0">Tiếp tục &rarr;</button></div></div>`;
+            }
+            return html;
+        }
+    </script>
+</body>
+</html>
+
